@@ -82,6 +82,14 @@ void calendar_widget_month_changed(GtkCalendar *widget,
   calendar_widget_update_holiday_marks(cal);
 }
 
+void calendar_widget_weak_notify(CalendarWidget *cal,
+                                 GtkWidget *widget)
+{
+  cal->widget = NULL;
+  calendar_widget_destroy(cal);
+  cal->priv = NULL;
+}
+
 CalendarWidget *calendar_widget_new(void)
 {
   CalendarWidget *cal = g_new0(CalendarWidget, 1);
@@ -117,6 +125,10 @@ CalendarWidget *calendar_widget_new(void)
   calendar_widget_update_holidays(cal);
   calendar_widget_update_holiday_marks(cal);
 
+  g_object_weak_ref(G_OBJECT(cal->widget),
+                    (GWeakNotify)calendar_widget_weak_notify,
+                    (gpointer)cal);
+
   return cal;
 }
 
@@ -131,6 +143,7 @@ void calendar_widget_destroy(CalendarWidget *calendar)
 {
   holidays_holiday_list_free(calendar->priv->current_holidays);
   holidays_holiday_context_free(calendar->priv->context);
+  g_free(calendar->priv);
 }
 
 void calendar_widget_set_holiday_context(CalendarWidget *calendar,

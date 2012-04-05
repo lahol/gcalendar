@@ -170,7 +170,5 @@ int main(int argc, char **argv)
 
   gtk_main();
 
-  calendar_widget_destroy(calendar);
-
   return 0;
 }
