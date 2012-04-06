@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include "holidays.h"
 #include "calendar.h"
 
@@ -103,6 +104,42 @@ void main_tray_icon_clicked(GtkStatusIcon *icon,
   main_tray_icon_toggle_display(tray_widget);
 }
 
+GtkWidget *main_create_main_menu(GtkAccelGroup *accel)
+{
+  GtkWidget *item; 
+  GtkWidget *menu;
+ 
+  menu = gtk_menu_new();
+  
+/*  item = gtk_menu_item_new_with_label("Quit");*/
+  item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
+  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtk_main_quit), NULL);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+
+  if (accel) {
+    gtk_widget_add_accelerator(item, "activate", accel, GDK_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+  }
+
+  return menu;
+}
+
+void main_tray_icon_menu(GtkStatusIcon *icon,
+                         guint button,
+                         guint activate_time,
+                         gpointer user_data)
+{
+  GtkWidget *popup_menu = main_create_main_menu(NULL);
+  gtk_widget_show_all(popup_menu);
+
+  gtk_menu_popup(GTK_MENU(popup_menu),
+                 NULL,
+                 NULL, 
+                 (GtkMenuPositionFunc)gtk_status_icon_position_menu,
+                 (gpointer)icon,
+                 button,
+                 activate_time);
+}
+
 gboolean main_read_configuration_file(void)
 {
   GKeyFile *file = NULL;
@@ -168,6 +205,8 @@ gboolean main_read_config(int argc, char **argv)
 GtkWidget *main_create_window(GtkWidget *calendar_widget)
 {
   GtkWidget *window;
+  GtkWidget *menubar, *item, *submenu, *vbox;
+  GtkAccelGroup *accel = NULL;
 
   if (config.attach_to_tray) {
     window = gtk_window_new(GTK_WINDOW_POPUP);
@@ -181,8 +220,25 @@ GtkWidget *main_create_window(GtkWidget *calendar_widget)
   }
 
   gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
+  
+  accel = gtk_accel_group_new();
+  gtk_window_add_accel_group(GTK_WINDOW(window), accel);
 
-  gtk_container_add(GTK_CONTAINER(window), calendar_widget);
+  menubar = gtk_menu_bar_new();
+  item = gtk_menu_item_new_with_label("Calendar");
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(menubar), item);
+
+  submenu = main_create_main_menu(accel);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+
+  vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(vbox), calendar_widget, TRUE, TRUE, 0);
+
+  gtk_widget_show_all(vbox);
+
+  gtk_container_add(GTK_CONTAINER(window), vbox);
 
   return window;
 }
@@ -200,6 +256,10 @@ void main_set_up_application(GtkWidget *window)
   g_signal_connect(G_OBJECT(status_icon),
                    "activate",
                    G_CALLBACK(main_tray_icon_clicked),
+                   window);
+  g_signal_connect(G_OBJECT(status_icon),
+                   "popup-menu",
+                   G_CALLBACK(main_tray_icon_menu),
                    window);
 }
 
