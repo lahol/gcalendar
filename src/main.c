@@ -3,10 +3,15 @@
 #include "holidays.h"
 #include "calendar.h"
 
+#define MAIN_MENU_ITEM_TOGGLE_DISPLAY_HOLIDAYS     1
+#define MAIN_MENU_ITEM_TOGGLE_DISPLAY_TASKS        2
+
 struct Configuration {
   gboolean attach_to_tray;
   gchar *holiday_file;
   gchar *config_file;
+  gboolean show_holidays;
+  gboolean show_tasks;
 } config;
 
 CalendarWidget *calendar = NULL;
@@ -104,18 +109,54 @@ void main_tray_icon_clicked(GtkStatusIcon *icon,
   main_tray_icon_toggle_display(tray_widget);
 }
 
+void main_menu_toggle_display(GtkCheckMenuItem *item,
+                              gpointer user_data)
+{
+  gint id = GPOINTER_TO_INT(user_data);
+  if (id == MAIN_MENU_ITEM_TOGGLE_DISPLAY_HOLIDAYS) {
+    if (item->active) {
+      g_print("holidays active\n");
+    }
+    else {
+      g_print("holidays not active\n");
+    }
+  }
+}
+
 GtkWidget *main_create_main_menu(GtkAccelGroup *accel)
 {
   GtkWidget *item; 
   GtkWidget *menu;
  
   menu = gtk_menu_new();
+
+  item = gtk_check_menu_item_new_with_label("Show holidays");
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), config.show_holidays);
+  g_signal_connect(G_OBJECT(item),
+                   "toggled",
+                   G_CALLBACK(main_menu_toggle_display),
+                   GINT_TO_POINTER(MAIN_MENU_ITEM_TOGGLE_DISPLAY_HOLIDAYS));
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+  if (accel) {
+    gtk_widget_add_accelerator(item, "activate", accel, GDK_h, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+  }
   
-/*  item = gtk_menu_item_new_with_label("Quit");*/
+  item = gtk_check_menu_item_new_with_label("Show tasks");
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), config.show_tasks);
+  g_signal_connect(G_OBJECT(item),
+                   "toggled",
+                   G_CALLBACK(main_menu_toggle_display),
+                   GINT_TO_POINTER(MAIN_MENU_ITEM_TOGGLE_DISPLAY_TASKS));
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+  if (accel) {
+    gtk_widget_add_accelerator(item, "activate", accel, GDK_t, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+  }
+
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
   item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtk_main_quit), NULL);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-
   if (accel) {
     gtk_widget_add_accelerator(item, "activate", accel, GDK_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
   }
