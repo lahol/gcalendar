@@ -212,33 +212,35 @@ GtkWidget *main_create_window(GtkWidget *calendar_widget)
     window = gtk_window_new(GTK_WINDOW_POPUP);
 
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+    gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
+
+    gtk_container_add(GTK_CONTAINER(window), calendar_widget);
   }
   else {
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     g_signal_connect(window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
-  }
-
-  gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
+    gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
   
-  accel = gtk_accel_group_new();
-  gtk_window_add_accel_group(GTK_WINDOW(window), accel);
+    accel = gtk_accel_group_new();
+    gtk_window_add_accel_group(GTK_WINDOW(window), accel);
 
-  menubar = gtk_menu_bar_new();
-  item = gtk_menu_item_new_with_label("Calendar");
+    menubar = gtk_menu_bar_new();
+    item = gtk_menu_item_new_with_label("Calendar");
 
-  gtk_menu_shell_append(GTK_MENU_SHELL(menubar), item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), item);
 
-  submenu = main_create_main_menu(accel);
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+    submenu = main_create_main_menu(accel);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
 
-  vbox = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(vbox), calendar_widget, TRUE, TRUE, 0);
+    vbox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(vbox), calendar_widget, TRUE, TRUE, 0);
 
-  gtk_widget_show_all(vbox);
+    gtk_widget_show_all(vbox);
 
-  gtk_container_add(GTK_CONTAINER(window), vbox);
+    gtk_container_add(GTK_CONTAINER(window), vbox);
+  }
 
   return window;
 }
