@@ -1,0 +1,14 @@
+*Makefile
+*Makefile.in
+autom4te.cache/
+autoscan.log
+config.*
+depcomp
+gcalendar
+install-sh
+missing
+*.deps/
+*.o
+stamp-h1
+aclocal.m4
+configure

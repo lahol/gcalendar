@@ -1,12 +1,28 @@
 #include "holidays.h"
+#include <stdio.h>
+
+struct _HolidayContextEntry {
+  void (*relative)(GDate *);
+  gint offset;
+  guint day;
+  guint month;
+  gchar *description;
+};
 
 struct _HolidayContext {
+  GList *holidays;
+};
+
+struct HolidayParserState {
+  GString *content;
+  HolidayContext *context;
+  struct _HolidayContextEntry *current;
 };
 
 void holidays_holiday_free(Holiday *holiday)
 {
   g_date_free(holiday->date);
-  g_free(holiday->description);
+/*  g_free(holiday->description);*/
 }
 
 guint holidays_get_day_of_year(guint year, guint month, guint day)
@@ -102,7 +118,7 @@ gint holidays_holiday_compare(Holiday *a, Holiday *b)
 GList *holidays_holiday_list_insert_relative(GList *list,
                                              GDate *base,
                                              gint offset,
-                                             const gchar *description)
+                                             gchar *description)
 {
   Holiday *holiday = g_new0(Holiday, 1);
 
@@ -111,7 +127,7 @@ GList *holidays_holiday_list_insert_relative(GList *list,
   guint doy = g_date_get_day_of_year(holiday->date);
   holidays_set_day_of_year(holiday->date, doy+offset);
 
-  holiday->description = g_strdup(description);
+  holiday->description = description;
 
   return g_list_insert_sorted(list,
                               (gpointer)holiday,
@@ -124,7 +140,7 @@ GList *holidays_holiday_list_insert_dmy(GList *list,
                                         guint day,
                                         guint month,
                                         guint year,
-                                        const gchar *description)
+                                        gchar *description)
 {
   GList *tmp;
   GDate *date = g_date_new_dmy(day, month, year);
@@ -133,61 +149,45 @@ GList *holidays_holiday_list_insert_dmy(GList *list,
   return tmp;
 }
 
-HolidayContext *holidays_holiday_context_new(const gchar *filename)
-{
-  return NULL;
-}
-
-void holidays_holiday_context_free(HolidayContext *context)
-{
-}
-
 GList *holidays_get_holidays_for_year(HolidayContext *context,
                                       guint year)
 {
-  GDate *date = g_date_new_dmy(1, 1, year);
   GList *holidays = NULL;
+  GDate *date = NULL;
+  GList *cur = NULL;
+  struct _HolidayContextEntry *entry;
 
-  holidays_get_fourth_advent(date);
-  holidays = holidays_holiday_list_insert(holidays, date, "4. Advent");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, -7, "3. Advent");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, -14, "2. Advent");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, -21, "1. Advent");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, -32, "Buß- und Bettag");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, -28, "Totensonntag");
+  void (*get_relative)(GDate *) = NULL;
 
-  holidays_get_easter_sunday(date);
-  holidays = holidays_holiday_list_insert_relative(holidays, date, 60, "Fronleichnam");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, 50, "Pfingstmontag");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, 49, "Pfingstsonntag");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, 39, "Himmelfahrt");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, 1, "Ostermontag");
-  holidays = holidays_holiday_list_insert(holidays, date, "Ostersonntag");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, -1, "Karsamstag");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, -2, "Karfreitag");
-  holidays = holidays_holiday_list_insert_relative(holidays, date, -3, "Gründonnerstag");
+  if (!context) {
+    return NULL;
+  }
 
-  holidays_get_begin_dst(date);
-  holidays = holidays_holiday_list_insert(holidays, date, "Beginn Sommerzeit");
+  date = g_date_new_dmy(1, 1, year);
 
-  holidays_get_end_dst(date);
-  holidays = holidays_holiday_list_insert(holidays, date, "Ende Sommerzeit");
+  cur = context->holidays;
+  while (cur) {
+    entry = cur->data;
 
-  holidays = holidays_holiday_list_insert_dmy(holidays,  1,  1, year, "Neujahr");
-  holidays = holidays_holiday_list_insert_dmy(holidays,  6,  1, year, "Heilige drei Könige");
-  holidays = holidays_holiday_list_insert_dmy(holidays,  1,  5, year, "Maifeiertag");
-  holidays = holidays_holiday_list_insert_dmy(holidays,  3, 10, year, "Tag der deutschen Einheit");
-  holidays = holidays_holiday_list_insert_dmy(holidays, 24, 12, year, "Heiligabend");
-  holidays = holidays_holiday_list_insert_dmy(holidays, 25, 12, year, "1. Weihnachtstag");
-  holidays = holidays_holiday_list_insert_dmy(holidays, 26, 12, year, "2. Weihnachtstag");
-  holidays = holidays_holiday_list_insert_dmy(holidays, 31, 12, year, "Silvester");
-  holidays = holidays_holiday_list_insert_dmy(holidays, 21, 12, year, "Winteranfang");
-  holidays = holidays_holiday_list_insert_dmy(holidays, 20,  3, year, "Frühlingsanfang");
-  holidays = holidays_holiday_list_insert_dmy(holidays, 21,  6, year, "Sommeranfang");
-  holidays = holidays_holiday_list_insert_dmy(holidays, 22,  9, year, "Herbstanfang");
-  holidays = holidays_holiday_list_insert_dmy(holidays,  1, 11, year, "Allerheiligen");
-  holidays = holidays_holiday_list_insert_dmy(holidays, 31, 10, year, "Reformationstag");
-  
+    if (get_relative != entry->relative) {
+      get_relative = entry->relative;
+      if (get_relative) {
+        get_relative(date);
+      }
+    }
+
+    if (get_relative) {
+      holidays = holidays_holiday_list_insert_relative(holidays, date, entry->offset, entry->description);
+    }
+    else {
+      g_date_set_day(date, entry->day);
+      g_date_set_month(date, entry->month);
+      holidays = holidays_holiday_list_insert(holidays, date, entry->description);
+    }
+
+    cur = g_list_next(cur);
+  }
+
   g_date_free(date);
   return holidays;
 }
@@ -196,4 +196,209 @@ void holidays_holiday_list_free(GList *holiday_list)
 {
   g_list_free_full(holiday_list,
                    (GDestroyNotify)holidays_holiday_free);
+}
+
+void holidays_holiday_context_parser_start_element(GMarkupParseContext *parse_ctx,
+                                                   const gchar *element_name,
+                                                   const gchar **attribute_names,
+                                                   const gchar **attribute_values,
+                                                   gpointer user_data,
+                                                   GError **error)
+{
+  struct HolidayParserState *state = user_data;
+  gchar *relative = NULL, *offset = NULL, *day = NULL, *month = NULL;
+
+  if (strcmp(element_name, "holiday") == 0) {
+    state->current = g_new0(struct _HolidayContextEntry, 1);
+    if (!state->content) {
+      state->content = g_string_new("");
+    }
+    if (!g_markup_collect_attributes(element_name,
+          attribute_names, attribute_values, NULL,
+          G_MARKUP_COLLECT_STRING, "relative", &relative,
+          G_MARKUP_COLLECT_STRING, "offset", &offset,
+          G_MARKUP_COLLECT_INVALID)) {
+      g_markup_collect_attributes(element_name,
+        attribute_names, attribute_values, NULL,
+        G_MARKUP_COLLECT_STRING, "day", &day,
+        G_MARKUP_COLLECT_STRING, "month", &month,
+        G_MARKUP_COLLECT_INVALID);
+    }
+
+    if (relative && offset) {
+      if (strcmp(relative, "easter sunday") == 0) {
+        state->current->relative = holidays_get_easter_sunday;
+      }
+      else if (strcmp(relative, "fourth advent") == 0) {
+        state->current->relative = holidays_get_fourth_advent;
+      }
+      else if (strcmp(relative, "mothers day") == 0) {
+        state->current->relative = holidays_get_mothers_day;
+      }
+      else if (strcmp(relative, "begin dst") == 0) {
+        state->current->relative = holidays_get_begin_dst;
+      }
+      else if (strcmp(relative, "end dst") == 0) {
+        state->current->relative = holidays_get_end_dst;
+      }
+      state->current->offset = strtol(offset, NULL, 10);
+    }
+    else if (day && month) {
+      state->current->day = strtoul(day, NULL, 10);
+      state->current->month = strtoul(month, NULL, 10);
+    }
+  }
+}
+
+void holidays_holiday_context_parser_end_element(GMarkupParseContext *parse_ctx,
+                                                 const gchar *element_name,
+                                                 gpointer user_data,
+                                                 GError **error)
+{
+  struct HolidayParserState *state = user_data;
+  gchar *content = NULL;
+
+  if (strcmp(element_name, "holiday") == 0) {
+    if (state->content) {
+      content = g_string_free(state->content, FALSE);
+      state->content = NULL;
+      g_strstrip(content);
+    }
+    state->current->description = content;
+
+    state->context->holidays = g_list_prepend(state->context->holidays, state->current);
+    state->current = NULL;
+  }
+}
+
+void holidays_holiday_context_parser_text(GMarkupParseContext *parse_ctx,
+                                          const gchar *text,
+                                          gsize text_len,
+                                          gpointer user_data,
+                                          GError **error)
+{
+  struct HolidayParserState *state = user_data;
+  if (state->content) {
+    g_string_append_len(state->content, text, text_len);
+  }
+}
+
+/* Helper to sort the list in descending order */
+gint holidays_holiday_context_entry_compare(struct _HolidayContextEntry *a,
+                                            struct _HolidayContextEntry *b)
+{
+  if (!a) return b ? 1 : 0;
+  if (!b) return -1;
+
+  if (a->relative < b->relative) {
+    return 1;
+  }
+  else if (a->relative > b->relative) {
+    return -1;
+  }
+  else {
+    if (a->relative != NULL) {
+      if (a->offset < b->offset) {
+        return 1;
+      }
+      else if (a->offset > b->offset) {
+        return -1;
+      }
+    }
+    else {
+      if (a->month < b->month) {
+        return 1;
+      }
+      else if (a->month > b->month) {
+        return -1;
+      }
+      else {
+        if (a->day < b->day) {
+          return 1;
+        }
+        else if (a->day > b->day) {
+          return -11;
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+HolidayContext *holidays_holiday_context_new(const gchar *filename)
+{
+  FILE *f;
+  GMarkupParser parser = { NULL, };
+  GMarkupParseContext *parse_ctx = NULL;
+  GError *error = NULL;
+  gchar buffer[512];
+  size_t bytes;
+
+  struct HolidayParserState state;
+  state.content = NULL;
+  state.current = NULL;
+
+  if (!filename) {
+    return NULL;
+  }
+
+  if ((f = fopen(filename, "r")) == NULL) {
+    return NULL;
+  }
+  
+  state.context = g_new0(HolidayContext, 1);
+
+  parser.start_element = holidays_holiday_context_parser_start_element;
+  parser.end_element   = holidays_holiday_context_parser_end_element;
+  parser.text          = holidays_holiday_context_parser_text;
+
+  parse_ctx = g_markup_parse_context_new(&parser,
+                                         G_MARKUP_TREAT_CDATA_AS_TEXT,
+                                         &state,
+                                         NULL);
+
+  while (!feof(f) && (bytes = fread(buffer, 1, 512, f)) > 0) {
+    if (!g_markup_parse_context_parse(parse_ctx,
+                                      buffer,
+                                      bytes,
+                                      &error)) {
+      g_print("break with %d bytes\n", bytes);
+      break;
+    }
+  }
+
+  fclose(f);
+
+  if (error || !g_markup_parse_context_end_parse(parse_ctx, &error)) {
+    g_warning("Unable to parse file: %s\n", error->message);
+    g_error_free(error);
+    g_markup_parse_context_free(parse_ctx);
+    holidays_holiday_context_free(state.context);
+    if (state.content) {
+      g_string_free(state.content, TRUE);
+    }
+    return NULL;
+  }
+
+  g_markup_parse_context_free(parse_ctx);
+
+  state.context->holidays = g_list_sort(state.context->holidays,
+                                        (GCompareFunc)holidays_holiday_context_entry_compare);
+
+  return state.context;
+}
+
+void holidays_holiday_context_free(HolidayContext *context)
+{
+  GList *cur;
+  if (context) {
+    cur = context->holidays;
+    while (cur) {
+      g_free(((struct _HolidayContextEntry*)cur->data)->description);
+      g_free(cur->data);
+      cur = g_list_next(cur);
+    }
+    g_list_free(context->holidays);
+    g_free(context);
+  }
 }

@@ -4,6 +4,7 @@
 
 struct Configuration {
   gboolean attach_to_tray;
+  gchar *holiday_file;
 } config;
 
 CalendarWidget *calendar = NULL;
@@ -91,7 +92,9 @@ void main_tray_icon_clicked(GtkStatusIcon *icon,
 
 static GOptionEntry main_option_entries[] = {
   { "tray", 't', 0, G_OPTION_ARG_NONE, &config.attach_to_tray,
-    "Attach to tray", "value"},
+    "Attach to tray", "value" },
+  { "holiday-file", 'f', 0, G_OPTION_ARG_STRING, &config.holiday_file,
+    "Holiday file", "value" },
   NULL
 };
 
@@ -160,7 +163,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  holiday_context = holidays_holiday_context_new(NULL);
+  holiday_context = holidays_holiday_context_new(config.holiday_file);
 
   calendar = calendar_widget_new();
   calendar_widget_set_holiday_context(calendar, holiday_context);

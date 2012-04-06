@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<holidays>
+	<description id="de">Feiertage für Deutschland</description>
+	<holiday relative="easter sunday" offset="0">Ostersonntag</holiday>
+	<holiday relative="easter sunday" offset="1">Ostermontag</holiday>
+	<holiday relative="easter sunday" offset="-1">Karsamstag</holiday>
+	<holiday relative="easter sunday" offset="-2">Karfreitag</holiday>
+	<holiday relative="easter sunday" offset="-3">Gründonnerstag</holiday>
+	<holiday relative="easter sunday" offset="60">Fronleichnam</holiday>
+	<holiday relative="easter sunday" offset="50">Pfingstmontag</holiday>
+	<holiday relative="easter sunday" offset="49">Pfingstsonntag</holiday>
+	<holiday relative="easter sunday" offset="39">Himmelfahrt</holiday>
+
+	<holiday relative="fourth advent" offset="0">4. Advent</holiday>
+	<holiday relative="fourth advent" offset="-7">3. Advent</holiday>
+	<holiday relative="fourth advent" offset="-14">2. Advent</holiday>
+	<holiday relative="fourth advent" offset="-21">1. Advent</holiday>
+	<holiday relative="fourth advent" offset="-28">Totensonntag</holiday>
+	<holiday relative="fourth advent" offset="-32">Buß- und Bettag</holiday>
+
+	<holiday relative="begin dst" offset="0">Beginn Sommerzeit</holiday>
+	<holiday relative="end dst" offset="0">Beginn Winterzeit</holiday>
+
+	<holiday day="20" month="3">Frühlingsanfang</holiday>
+	<holiday day="21" month="6">Sommeranfang</holiday>
+	<holiday day="22" month="9">Herbstanfang</holiday>
+	<holiday day="21" month="12">Winteranfang</holiday>
+
+	<holiday day="1" month="1">Neujahr</holiday>
+	<holiday day="6" month="1">Heilige drei Könige</holiday>
+	<holiday day="1" month="5">Maifeiertag</holiday>
+	<holiday day="3" month="10">Tag der deutschen Einheit</holiday>
+	<holiday day="31" month="10">Reformationstag</holiday>
+	<holiday day="1" month="11">Allerheiligen</holiday>
+	<holiday day="24" month="12">Heiligabend</holiday>
+	<holiday day="25" month="12">1. Weihnachtstag</holiday>
+	<holiday day="26" month="12">2. Weihnachtstag</holiday>
+	<holiday day="31" month="12">Silvester</holiday>
+
+</holidays>
