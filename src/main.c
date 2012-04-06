@@ -46,6 +46,18 @@ void main_tray_position_window(GtkWidget *window)
   gtk_widget_size_request(window, &win_req);
 
   if (orientation == GTK_ORIENTATION_VERTICAL) {
+    if (area.x + area.width + win_req.width <= monitor.x + monitor.width) {
+      x = area.x + area.width;
+    }
+    else {
+      x = area.x - win_req.width;
+    }
+    if (area.y + win_req.height <= monitor.y + monitor.height) {
+      y = area.y;
+    }
+    else {
+      y = monitor.y + monitor.height - win_req.height;
+    }
   }
   else {
     if (area.y + area.height + win_req.height <= monitor.y + monitor.height) {
