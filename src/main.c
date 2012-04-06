@@ -5,6 +5,7 @@
 struct Configuration {
   gboolean attach_to_tray;
   gchar *holiday_file;
+  gchar *config_file;
 } config;
 
 CalendarWidget *calendar = NULL;
@@ -102,11 +103,48 @@ void main_tray_icon_clicked(GtkStatusIcon *icon,
   main_tray_icon_toggle_display(tray_widget);
 }
 
+gboolean main_read_configuration_file(void)
+{
+  GKeyFile *file = NULL;
+  const gchar *config_dirs[2];
+
+  if (config.holiday_file) {
+    return TRUE;
+  }
+
+  file = g_key_file_new();
+
+  if (config.config_file) {
+    if (!g_key_file_load_from_file(file, config.config_file, 0, NULL)) {
+      g_key_file_free(file);
+      return FALSE;
+    }
+  }
+  else {
+    config_dirs[0] = g_get_user_config_dir();
+    config_dirs[1] = NULL;
+
+    if (!g_key_file_load_from_dirs(file, "gcalendarrc", config_dirs, NULL, 0, NULL) &&
+        !g_key_file_load_from_dirs(file, "gcalendarrc", g_get_system_config_dirs, NULL, 0, NULL)) {
+      g_key_file_free(file);
+      return FALSE;
+    }
+  }
+
+  config.holiday_file = g_key_file_get_string(file, "Holidays", "source", NULL);
+
+  g_key_file_free(file);
+
+  return TRUE;
+}
+
 static GOptionEntry main_option_entries[] = {
   { "tray", 't', 0, G_OPTION_ARG_NONE, &config.attach_to_tray,
     "Attach to tray", "value" },
   { "holiday-file", 'f', 0, G_OPTION_ARG_STRING, &config.holiday_file,
     "Holiday file", "value" },
+  { "config", 'c', 0, G_OPTION_ARG_STRING, &config.config_file,
+    "Configuration file", "value" },
   NULL
 };
 
@@ -171,7 +209,12 @@ int main(int argc, char **argv)
 
   gtk_init(&argc, &argv);
   if (!main_read_config(argc, argv)) {
-    g_error("Could not read configuration\n");
+    g_warning("Could not read command line\n");
+    return 1;
+  }
+
+  if (!main_read_configuration_file()) {
+    g_warning("Could not read configuration file\n");
     return 1;
   }
 
