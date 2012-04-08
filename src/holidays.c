@@ -1,5 +1,6 @@
 #include "holidays.h"
 #include <stdio.h>
+#include "compat.h"
 
 struct _HolidayContextEntry {
   void (*relative)(GDate *);
