@@ -203,7 +203,7 @@ gboolean main_read_configuration_file(void)
     config_dirs[1] = NULL;
 
     if (!g_key_file_load_from_dirs(file, "gcalendarrc", config_dirs, NULL, 0, NULL) &&
-        !g_key_file_load_from_dirs(file, "gcalendarrc", g_get_system_config_dirs, NULL, 0, NULL)) {
+        !g_key_file_load_from_dirs(file, "gcalendarrc", g_get_system_config_dirs(), NULL, 0, NULL)) {
       g_key_file_free(file);
       return FALSE;
     }
