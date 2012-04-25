@@ -293,7 +293,9 @@ void main_set_up_application(GtkWidget *window)
     return;
   }
 
-  status_icon = gtk_status_icon_new_from_stock(GTK_STOCK_ABOUT);
+  g_print("Try to load file %s\n", GCALENDARDATADIR "/gcalendar.svg");
+
+  status_icon = gtk_status_icon_new_from_file(GCALENDARDATADIR "/gcalendar.svg");
   gtk_status_icon_set_visible(status_icon, TRUE);
 
   g_signal_connect(G_OBJECT(status_icon),
