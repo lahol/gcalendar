@@ -1,6 +1,7 @@
 #include "holidays.h"
 #include <stdio.h>
-#include "compat.h"
+#include <string.h>
+#include <stdlib.h>
 
 struct _HolidayContextEntry {
   void (*relative)(GDate *);
@@ -291,10 +292,14 @@ gint holidays_holiday_context_entry_compare(struct _HolidayContextEntry *a,
   if (!a) return b ? 1 : 0;
   if (!b) return -1;
 
-  if (a->relative < b->relative) {
+  /* group the holidays according to their depending date, i.e. all holidays
+   * relative to easter sunday are consecutively ordered, as are the fixed
+   * dates. This makes sure that we only calculate the main dates once per year.
+   * That is why we compare function pointers. */
+  if (GPOINTER_TO_UINT(a->relative) < GPOINTER_TO_UINT(b->relative)) {
     return 1;
   }
-  else if (a->relative > b->relative) {
+  else if (GPOINTER_TO_UINT(a->relative) > GPOINTER_TO_UINT(b->relative)) {
     return -1;
   }
   else {
@@ -363,7 +368,7 @@ HolidayContext *holidays_holiday_context_new(const gchar *filename)
                                       buffer,
                                       bytes,
                                       &error)) {
-      g_print("break with %d bytes\n", bytes);
+      g_print("break with %zd bytes\n", bytes);
       break;
     }
   }

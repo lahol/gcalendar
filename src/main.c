@@ -50,7 +50,7 @@ void main_tray_position_window(GtkWidget *window)
   gdk_screen_get_monitor_geometry(screen, monitor_num, &monitor);
   
   gtk_container_foreach(GTK_CONTAINER(window), (GtkCallback)gtk_widget_show_all, NULL);
-  gtk_widget_size_request(window, &win_req);
+  gtk_widget_get_preferred_size(window, &win_req, NULL);
 
   if (orientation == GTK_ORIENTATION_VERTICAL) {
     if (area.x + area.width + win_req.width <= monitor.x + monitor.width) {
@@ -114,7 +114,7 @@ void main_menu_toggle_display(GtkCheckMenuItem *item,
 {
   gint id = GPOINTER_TO_INT(user_data);
   if (id == MAIN_MENU_ITEM_TOGGLE_DISPLAY_HOLIDAYS) {
-    if (item->active) {
+    if (gtk_check_menu_item_get_active(item)) {
       g_print("holidays active\n");
     }
     else {
@@ -138,7 +138,7 @@ GtkWidget *main_create_main_menu(GtkAccelGroup *accel)
                    GINT_TO_POINTER(MAIN_MENU_ITEM_TOGGLE_DISPLAY_HOLIDAYS));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
   if (accel) {
-    gtk_widget_add_accelerator(item, "activate", accel, GDK_h, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(item, "activate", accel, GDK_KEY_h, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
   }
   
   item = gtk_check_menu_item_new_with_label("Show tasks");
@@ -149,7 +149,7 @@ GtkWidget *main_create_main_menu(GtkAccelGroup *accel)
                    GINT_TO_POINTER(MAIN_MENU_ITEM_TOGGLE_DISPLAY_TASKS));
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
   if (accel) {
-    gtk_widget_add_accelerator(item, "activate", accel, GDK_t, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(item, "activate", accel, GDK_KEY_t, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
   }
 
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
@@ -158,7 +158,7 @@ GtkWidget *main_create_main_menu(GtkAccelGroup *accel)
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtk_main_quit), NULL);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
   if (accel) {
-    gtk_widget_add_accelerator(item, "activate", accel, GDK_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator(item, "activate", accel, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
   }
 
   return menu;
@@ -203,7 +203,7 @@ gboolean main_read_configuration_file(void)
     config_dirs[1] = NULL;
 
     if (!g_key_file_load_from_dirs(file, "gcalendarrc", config_dirs, NULL, 0, NULL) &&
-        !g_key_file_load_from_dirs(file, "gcalendarrc", g_get_system_config_dirs(), NULL, 0, NULL)) {
+        !g_key_file_load_from_dirs(file, "gcalendarrc", (const gchar**)g_get_system_config_dirs(), NULL, 0, NULL)) {
       g_key_file_free(file);
       return FALSE;
     }
@@ -246,7 +246,7 @@ gboolean main_read_config(int argc, char **argv)
 GtkWidget *main_create_window(GtkWidget *calendar_widget)
 {
   GtkWidget *window;
-  GtkWidget *menubar, *item, *submenu, *vbox;
+  GtkWidget *menubar, *item, *submenu, *grid;
   GtkAccelGroup *accel = NULL;
 
   if (config.attach_to_tray) {
@@ -274,13 +274,15 @@ GtkWidget *main_create_window(GtkWidget *calendar_widget)
     submenu = main_create_main_menu(accel);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
 
-    vbox = gtk_vbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(vbox), calendar_widget, TRUE, TRUE, 0);
+    grid = gtk_grid_new();
+    gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(grid), GTK_ORIENTATION_VERTICAL);
+    gtk_container_add(GTK_CONTAINER(grid), menubar);
+    gtk_container_add(GTK_CONTAINER(grid), calendar_widget);
 
-    gtk_widget_show_all(vbox);
+    gtk_widget_show_all(grid);
 
-    gtk_container_add(GTK_CONTAINER(window), vbox);
+    gtk_container_add(GTK_CONTAINER(window), grid);
   }
 
   return window;
