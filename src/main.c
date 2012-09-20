@@ -19,6 +19,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "holidays.h"
 #include "calendar.h"
+#include "config.h"
 
 #define MAIN_MENU_ITEM_TOGGLE_DISPLAY_HOLIDAYS     1
 #define MAIN_MENU_ITEM_TOGGLE_DISPLAY_TASKS        2
@@ -67,7 +68,11 @@ void main_tray_position_window(GtkWidget *window)
   gdk_screen_get_monitor_geometry(screen, monitor_num, &monitor);
   
   gtk_container_foreach(GTK_CONTAINER(window), (GtkCallback)gtk_widget_show_all, NULL);
+#ifdef USE_GTK2
+  gtk_widget_size_request(window, &win_req);
+#else
   gtk_widget_get_preferred_size(window, &win_req, NULL);
+#endif
 
   if (orientation == GTK_ORIENTATION_VERTICAL) {
     if (area.x + area.width + win_req.width <= monitor.x + monitor.width) {
@@ -291,11 +296,17 @@ GtkWidget *main_create_window(GtkWidget *calendar_widget)
     submenu = main_create_main_menu(accel);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
 
+#ifdef USE_GTK2
+    grid = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(grid), menubar, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(grid), calendar_widget, TRUE, TRUE, 0);
+#else
     grid = gtk_grid_new();
     gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
     gtk_orientable_set_orientation(GTK_ORIENTABLE(grid), GTK_ORIENTATION_VERTICAL);
     gtk_container_add(GTK_CONTAINER(grid), menubar);
     gtk_container_add(GTK_CONTAINER(grid), calendar_widget);
+#endif
 
     gtk_widget_show_all(grid);
 

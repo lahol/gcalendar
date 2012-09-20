@@ -12,7 +12,19 @@ AC_PROG_CC
 
 # Checks for libraries.
 PKG_CHECK_MODULES(GLIB, [glib-2.0 >= 2.28])
-PKG_CHECK_MODULES(GTK, [gtk+-3.0 >= 3.0])
+
+AC_ARG_WITH([gtk2],
+	    [AS_HELP_STRING([--with-gtk2],
+			    [Use Gtk2 instead of Gtk3 @<:@default=no@:>@])],
+	    [with_gtk2=${withval}],
+	    [with_gtk2=no])
+
+if test "x$with_gtk2" = "xyes" ; then
+	PKG_CHECK_MODULES(GTK, [gtk+-2.0 >= 2.22])
+	AC_DEFINE([USE_GTK2], [], [Use Gtk2])
+else
+	PKG_CHECK_MODULES(GTK, [gtk+-3.0 >= 3.0])
+fi
 
 LIBS="$LIBS $GLIB_LIBS $GTK_LIBS"
 CFLAGS="$CFLAGS $GLIB_CFLAGS $GTK_CFLAGS"
