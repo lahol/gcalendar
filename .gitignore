@@ -5,6 +5,7 @@ autoscan.log
 config.*
 depcomp
 gcalendar
+gcal-remote
 install-sh
 missing
 *.deps/

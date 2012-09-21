@@ -19,6 +19,8 @@
 #include <gdk/gdkkeysyms.h>
 #include "holidays.h"
 #include "calendar.h"
+#include "commands.h"
+#include "ipc-server.h"
 #include "config.h"
 
 #define MAIN_MENU_ITEM_TOGGLE_DISPLAY_HOLIDAYS     1
@@ -28,6 +30,7 @@ struct Configuration {
   gboolean attach_to_tray;
   gchar *holiday_file;
   gchar *config_file;
+  gchar *socket_path;
   gboolean show_holidays;
   gboolean show_tasks;
 } config;
@@ -36,6 +39,7 @@ CalendarWidget *calendar = NULL;
 HolidayContext *holiday_context = NULL;
 GtkStatusIcon *status_icon = NULL;
 gboolean tray_window_visible = FALSE;
+GtkWidget *main_window = NULL;
 
 void main_tray_position_window(GtkWidget *window)
 {
@@ -245,6 +249,8 @@ static GOptionEntry main_option_entries[] = {
     "Holiday file", "value" },
   { "config", 'c', 0, G_OPTION_ARG_STRING, &config.config_file,
     "Configuration file", "value" },
+  { "socket-path", 's', 0, G_OPTION_ARG_STRING, &config.socket_path,
+    "Socket path for IPC", "value" },
   NULL
 };
 
@@ -323,8 +329,6 @@ void main_set_up_application(GtkWidget *window)
     return;
   }
 
-  g_print("Try to load file %s\n", GCALENDARDATADIR "/gcalendar.svg");
-
   status_icon = gtk_status_icon_new_from_file(GCALENDARDATADIR "/gcalendar.svg");
   gtk_status_icon_set_visible(status_icon, TRUE);
 
@@ -340,8 +344,6 @@ void main_set_up_application(GtkWidget *window)
 
 int main(int argc, char **argv)
 {
-  GtkWidget *window;
-
   gtk_init(&argc, &argv);
   if (!main_read_config(argc, argv)) {
     g_warning("Could not read command line\n");
@@ -358,10 +360,28 @@ int main(int argc, char **argv)
   calendar = calendar_widget_new();
   calendar_widget_set_holiday_context(calendar, holiday_context);
 
-  window = main_create_window(calendar->widget);
-  main_set_up_application(window);
+  main_window = main_create_window(calendar->widget);
+  main_set_up_application(main_window);
+
+  if (config.attach_to_tray && config.socket_path) {
+    if (ipc_server_start(config.socket_path) != 0) {
+      fprintf(stderr, "Could not start ipc server.\n");
+    }
+  }
 
   gtk_main();
 
+  if (config.attach_to_tray && config.socket_path) {
+    ipc_server_stop();
+  }
+
   return 0;
+}
+
+void command_toggle_display(void)
+{
+  if (!config.attach_to_tray) /* this command has only an effect on the tray widget */
+    return;
+
+  main_tray_icon_toggle_display(main_window);
 }
