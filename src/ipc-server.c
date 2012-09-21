@@ -38,7 +38,12 @@ int ipc_server_start(char *address)
     return 1;
   }
 
+#if GLIB_CHECK_VERSION(2, 32, 0) /* g_thread_new since 2.32 */
   server_thread = g_thread_new("gcalserver", (GThreadFunc)_ipc_server_thread_proc, NULL);
+#else
+  server_thread = g_thread_create((GThreadFunc)_ipc_server_thread_proc,
+                                  NULL, TRUE, NULL);
+#endif
 
   if (server_thread == NULL) {
     fprintf(stderr, "Could not create server thread.\n");
