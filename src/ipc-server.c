@@ -21,6 +21,11 @@ union {
   struct sockaddr_un un;
 } addr;
 
+struct IPCCommand {
+  gchar *cmd;
+  void (*callback)(void);
+};
+
 int _ipc_server_init(char *address);
 void _ipc_server_accept(void);
 void _ipc_server_remove_client(int client_fd);
@@ -232,17 +237,34 @@ gboolean _ipc_server_set_idle_command(void (*func)(void))
   if (func) {
     func();
   }
+  else {
+    fprintf(stderr, "No callback for this command set.\n");
+  }
   /* remove source */
   return FALSE;
 }
 
+static struct IPCCommand _ipc_commands[] = {
+  { "toggle display", command_toggle_display },
+  { "select today",   command_select_today },
+  { "next month",     command_next_month },
+  { "prev month",     command_prev_month },
+  { "next year",      command_next_year },
+  { "prev year",      command_prev_year },
+  { NULL, NULL}
+};
+
 void _ipc_server_run_command(char *buffer)
 {
-  if (strcmp(buffer, "toggle display") == 0) {
-    g_idle_add((GSourceFunc)_ipc_server_set_idle_command,
-               (gpointer)command_toggle_display);
+  int i;
+
+  for (i = 0; _ipc_commands[i].cmd != NULL; ++i) {
+    if (strcmp(buffer, _ipc_commands[i].cmd) == 0) {
+      g_idle_add((GSourceFunc)_ipc_server_set_idle_command,
+                 (gpointer)_ipc_commands[i].callback);
+      return;
+    }
   }
-  else {
-    fprintf(stderr, "Unknown command: %s\n", buffer);
-  }
+
+  fprintf(stderr, "Unknown command: %s\n", buffer);
 }

@@ -385,3 +385,28 @@ void command_toggle_display(void)
 
   main_tray_icon_toggle_display(main_window);
 }
+
+void command_select_today(void)
+{
+  calendar_widget_select_today(calendar);
+}
+
+void command_next_month(void)
+{
+  calendar_widget_next_month(calendar);
+}
+
+void command_prev_month(void)
+{
+  calendar_widget_prev_month(calendar);
+}
+
+void command_next_year(void)
+{
+  calendar_widget_next_year(calendar);
+}
+
+void command_prev_year(void)
+{
+  calendar_widget_prev_year(calendar);
+}

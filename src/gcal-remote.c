@@ -18,6 +18,11 @@ static union {
 struct {
   char *socket_path;
   gboolean cmd_toggle_display;
+  gboolean cmd_today;
+  gboolean cmd_next_month;
+  gboolean cmd_prev_month;
+  gboolean cmd_next_year;
+  gboolean cmd_prev_year;
 } cmd;
 
 int remote_connect(char *address);
@@ -34,6 +39,21 @@ int main(int argc, char **argv) {
 
   if (cmd.cmd_toggle_display)
     write_all(sock_fd, "toggle display", 14);
+
+  if (cmd.cmd_today)
+    write_all(sock_fd, "select today", 12);
+
+  if (cmd.cmd_next_month)
+    write_all(sock_fd, "next month", 10);
+
+  if (cmd.cmd_prev_month)
+    write_all(sock_fd, "prev month", 10);
+
+  if (cmd.cmd_next_year)
+    write_all(sock_fd, "next year", 9);
+
+  if (cmd.cmd_prev_year)
+    write_all(sock_fd, "prev year", 9);
 
   close(sock_fd);
 
@@ -87,6 +107,16 @@ static GOptionEntry main_option_entries[] = {
     "Socket path for IPC", "value" },
   { "toggle-display", 't', 0, G_OPTION_ARG_NONE, &cmd.cmd_toggle_display,
     "Toggle display of tray widget", NULL },
+  { "today", 0, 0, G_OPTION_ARG_NONE, &cmd.cmd_today,
+    "Select today’s date", NULL },
+  { "next-month", 'n', 0, G_OPTION_ARG_NONE, &cmd.cmd_next_month,
+    "Select next month", NULL },
+  { "prev-month", 'p', 0, G_OPTION_ARG_NONE, &cmd.cmd_prev_month,
+    "Select previous month", NULL },
+  { "next-year", 0, 0, G_OPTION_ARG_NONE, &cmd.cmd_next_year,
+    "Select next year", NULL },
+  { "prev-year", 0, 0, G_OPTION_ARG_NONE, &cmd.cmd_prev_year,
+    "Select previous year", NULL },
   NULL
 };
 

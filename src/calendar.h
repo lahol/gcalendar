@@ -37,6 +37,16 @@ void calendar_widget_set_date(CalendarWidget *calendar,
                               guint month,
                               guint day);
 
+void calendar_widget_select_today(CalendarWidget *calendar);
+
+void calendar_widget_next_month(CalendarWidget *calendar);
+
+void calendar_widget_prev_month(CalendarWidget *calendar);
+
+void calendar_widget_next_year(CalendarWidget *calendar);
+
+void calendar_widget_prev_year(CalendarWidget *calendar);
+
 void calendar_widget_destroy(CalendarWidget *calendar);
 
 void calendar_widget_set_holiday_context(CalendarWidget *calendar,

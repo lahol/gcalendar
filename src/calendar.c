@@ -16,6 +16,7 @@
  */
 
 #include "calendar.h"
+#include <time.h>
 
 struct _CalendarWidgetPrivate {
   HolidayContext *context;
@@ -154,6 +155,69 @@ void calendar_widget_set_date(CalendarWidget *calendar,
                               guint month,
                               guint day)
 {
+}
+
+void calendar_widget_select_today(CalendarWidget *calendar)
+{
+  time_t current_time;
+  struct tm *today;
+
+  time(&current_time);
+  today = localtime(&current_time);
+  gtk_calendar_select_month(GTK_CALENDAR(calendar->widget), today->tm_mon, today->tm_year+1900);
+  gtk_calendar_select_day(GTK_CALENDAR(calendar->widget), today->tm_mday);
+}
+
+void calendar_widget_next_month(CalendarWidget *calendar)
+{
+  guint month, year;
+  gtk_calendar_get_date(GTK_CALENDAR(calendar->widget), &year, &month, NULL);
+
+  if (month == 11) {
+    month = 0;
+    ++year;
+  }
+  else {
+    ++month;
+  }
+
+  gtk_calendar_select_month(GTK_CALENDAR(calendar->widget), month, year);
+}
+
+void calendar_widget_prev_month(CalendarWidget *calendar)
+{
+  guint month, year;
+  gtk_calendar_get_date(GTK_CALENDAR(calendar->widget), &year, &month, NULL);
+
+  if (month == 0) {
+    month = 11;
+    --year;
+  }
+  else {
+    --month;
+  }
+
+  gtk_calendar_select_month(GTK_CALENDAR(calendar->widget), month, year);
+}
+
+void calendar_widget_next_year(CalendarWidget *calendar)
+{
+  guint month, year;
+  gtk_calendar_get_date(GTK_CALENDAR(calendar->widget), &year, &month, NULL);
+
+  ++year;
+
+  gtk_calendar_select_month(GTK_CALENDAR(calendar->widget), month, year);
+}
+
+void calendar_widget_prev_year(CalendarWidget *calendar)
+{
+  guint month, year;
+  gtk_calendar_get_date(GTK_CALENDAR(calendar->widget), &year, &month, NULL);
+
+  --year;
+  
+  gtk_calendar_select_month(GTK_CALENDAR(calendar->widget), month, year);
 }
 
 void calendar_widget_destroy(CalendarWidget *calendar)

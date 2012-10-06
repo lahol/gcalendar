@@ -20,4 +20,14 @@
 
 void command_toggle_display(void);
 
+void command_select_today(void);
+
+void command_next_month(void);
+
+void command_prev_month(void);
+
+void command_next_year(void);
+
+void command_prev_year(void);
+
 #endif
