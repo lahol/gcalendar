@@ -84,19 +84,12 @@ gchar *calendar_widget_get_details(GtkCalendar *widget,
   }
 }
 
-void calendar_widget_year_changed(GtkCalendar *widget,
-                                 CalendarWidget *cal)
-{
-  g_return_if_fail(cal != NULL);
-
-  calendar_widget_update_holidays(cal);
-}
-
 void calendar_widget_month_changed(GtkCalendar *widget,
                                    CalendarWidget *cal)
 {
   g_return_if_fail(cal != NULL);
 
+  calendar_widget_update_holidays(cal);
   calendar_widget_update_holiday_marks(cal);
 }
 
@@ -132,12 +125,12 @@ CalendarWidget *calendar_widget_new(void)
 
   g_signal_connect(cal->widget,
                    "next-year",
-                   G_CALLBACK(calendar_widget_year_changed),
+                   G_CALLBACK(calendar_widget_month_changed),
                    (gpointer)cal);
 
   g_signal_connect(cal->widget,
                    "prev-year",
-                   G_CALLBACK(calendar_widget_year_changed),
+                   G_CALLBACK(calendar_widget_month_changed),
                    (gpointer)cal);
 
   calendar_widget_update_holidays(cal);
