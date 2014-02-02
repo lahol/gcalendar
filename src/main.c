@@ -21,7 +21,6 @@
 #include "calendar.h"
 #include "commands.h"
 #include "ipc-server.h"
-#include "config.h"
 
 #define MAIN_MENU_ITEM_TOGGLE_DISPLAY_HOLIDAYS     1
 #define MAIN_MENU_ITEM_TOGGLE_DISPLAY_TASKS        2
@@ -251,7 +250,7 @@ static GOptionEntry main_option_entries[] = {
     "Configuration file", "value" },
   { "socket-path", 's', 0, G_OPTION_ARG_STRING, &config.socket_path,
     "Socket path for IPC", "value" },
-  NULL
+  { NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 gboolean main_read_config(int argc, char **argv)

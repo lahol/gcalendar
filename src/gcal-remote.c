@@ -117,7 +117,7 @@ static GOptionEntry main_option_entries[] = {
     "Select next year", NULL },
   { "prev-year", 0, 0, G_OPTION_ARG_NONE, &cmd.cmd_prev_year,
     "Select previous year", NULL },
-  NULL
+  { NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 gboolean parse_options(int argc, char **argv)
