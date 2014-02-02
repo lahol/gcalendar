@@ -25,9 +25,9 @@ typedef struct _CalendarWidget CalendarWidget;
 typedef struct _CalendarWidgetPrivate CalendarWidgetPrivate;
 
 struct _CalendarWidget {
-  GtkWidget *widget;
+    GtkWidget *widget;
 
-  CalendarWidgetPrivate *priv;
+    CalendarWidgetPrivate *priv;
 };
 
 CalendarWidget *calendar_widget_new(void);
@@ -50,6 +50,6 @@ void calendar_widget_prev_year(CalendarWidget *calendar);
 void calendar_widget_destroy(CalendarWidget *calendar);
 
 void calendar_widget_set_holiday_context(CalendarWidget *calendar,
-                                         HolidayContext *context);
+        HolidayContext *context);
 
 #endif

@@ -21,8 +21,8 @@
 #include <glib.h>
 
 typedef struct _Holiday {
-  GDate *date;
-  gchar *description;
+    GDate *date;
+    gchar *description;
 } Holiday;
 
 typedef struct _HolidayContext HolidayContext;
