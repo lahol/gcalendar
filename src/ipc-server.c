@@ -1,3 +1,8 @@
+/*
+ *  gcalendar -- a calendar tray widget
+ *  Copyright (C) 2012-2014 Holger Langenau (see also: LICENSE)
+ *
+ */
 #include "ipc-server.h"
 #include <glib.h>
 #include <string.h>

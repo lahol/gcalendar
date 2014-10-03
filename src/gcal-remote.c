@@ -1,3 +1,8 @@
+/*
+ *  gcalendar -- a calendar tray widget
+ *  Copyright (C) 2012-2014 Holger Langenau (see also: LICENSE)
+ *
+ */
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
