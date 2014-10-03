@@ -167,7 +167,7 @@ GtkWidget *main_create_main_menu(GtkAccelGroup *accel)
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
-    item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
+    item = gtk_menu_item_new_with_mnemonic("_Quit");
     g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtk_main_quit), NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
     if (accel) {
