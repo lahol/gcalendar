@@ -34,6 +34,13 @@ Example configuration in i3:
     }
     bindcode $mod+Shift+49 mode "gcalendar"
 
+If you want to use the provided holiday file (or your own), specify it with the `-f` or `--holiday-file`
+command line argument or create a configuration file in `XDG_CONFIG_HOME` (e.g., `~/.config/`) named
+`gcalendarrc` with the following content:
+
+    [Holidays]
+    source = /usr/share/gcalendar/holidays-de.xml
+
 ## License ##
 
 gcalendar is released under a MIT license. See LICENSE for details.
