@@ -23,12 +23,12 @@ Example configuration in i3:
 
     # gcalendar
     mode "gcalendar" {
-      bindcode 44 exec --no-startup-id /usr/local/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --prev-month
-      bindcode 45 exec --no-startup-id /usr/local/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --prev-year
-      bindcode 46 exec --no-startup-id /usr/local/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --next-year
-      bindcode 47 exec --no-startup-id /usr/local/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --next-month
-      bindcode 41 exec --no-startup-id /usr/local/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --today
-      bindcode 40 exec --no-startup-id /usr/local/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --toggle-display
+      bindcode 44 exec --no-startup-id /usr/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --prev-month
+      bindcode 45 exec --no-startup-id /usr/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --prev-year
+      bindcode 46 exec --no-startup-id /usr/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --next-year
+      bindcode 47 exec --no-startup-id /usr/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --next-month
+      bindcode 41 exec --no-startup-id /usr/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --today
+      bindcode 40 exec --no-startup-id /usr/bin/gcal-remote --socket-path=/home/lahol/.gcalendarsocket --toggle-display
       bindcode 36 mode "default"
       bindcode 9 mode "default"
     }
