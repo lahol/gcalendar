@@ -34,7 +34,7 @@ struct IPCCommand {
 int _ipc_server_init(char *address);
 void _ipc_server_accept(void);
 void _ipc_server_remove_client(int client_fd);
-void _ipc_server_serve(int client_fd);
+gboolean _ipc_server_serve(int client_fd);
 int _ipc_server_thread_proc(gpointer data);
 void _ipc_server_run_command(char *buffer);
 
@@ -168,7 +168,7 @@ void _ipc_server_remove_client(int client_fd)
     client_list = g_list_remove(client_list, GINT_TO_POINTER(client_fd));
 }
 
-void _ipc_server_serve(int client_fd)
+gboolean _ipc_server_serve(int client_fd)
 {
     char buf[1024];
     int rc;
@@ -180,13 +180,14 @@ void _ipc_server_serve(int client_fd)
                 continue;
             }
             if (errno == EAGAIN) {
-                return;
+                return TRUE;
             }
-            _ipc_server_remove_client(client_fd);
+            /*_ipc_server_remove_client(client_fd);*/
+            return FALSE;
         }
         if (rc == 0) {
-            _ipc_server_remove_client(client_fd);
-            return;
+            /*_ipc_server_remove_client(client_fd);*/
+            return FALSE;
         }
     }
     while (0);
@@ -194,6 +195,7 @@ void _ipc_server_serve(int client_fd)
     buf[rc] = '\0';
 
     _ipc_server_run_command(buf);
+    return TRUE;
 }
 
 int _ipc_server_thread_proc(gpointer data)
@@ -201,6 +203,7 @@ int _ipc_server_thread_proc(gpointer data)
     fd_set set;
     int max;
     GList *cur;
+    GList *remove_clients;
 
     while (1) {
         FD_ZERO(&set);
@@ -223,11 +226,20 @@ int _ipc_server_thread_proc(gpointer data)
             _ipc_server_accept();
         }
 
+        remove_clients = NULL;
         for (cur = client_list; cur != NULL; cur = cur->next) {
             if (FD_ISSET(GPOINTER_TO_INT(cur->data), &set)) {
-                _ipc_server_serve(GPOINTER_TO_INT(cur->data));
+                if (!_ipc_server_serve(GPOINTER_TO_INT(cur->data))) {
+                    /* Add client to list of the ones to remove */
+                    remove_clients = g_list_prepend(remove_clients, cur->data);
+                }
             }
         }
+        /* remove clients */
+        for (cur = remove_clients; cur != NULL; cur = cur-> next) {
+            _ipc_server_remove_client(GPOINTER_TO_INT(cur->data));
+        }
+        g_list_free(remove_clients);
 
         /* check pipe */
         if (FD_ISSET(server_ctrl_pipe[0], &set)) {
